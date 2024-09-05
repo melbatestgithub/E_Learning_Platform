@@ -3,7 +3,7 @@ import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-
+import axios from 'axios'
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
@@ -13,13 +13,9 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       // Replace with your API call
-      const fetchedUsers = [
-        { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin',status:'new' },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User',status:'new' },
-        // Add more users as needed
-      ];
-      setUsers(fetchedUsers);
-      setFilteredUsers(fetchedUsers);
+      const res=await axios.get("http://localhost:5600/user/getStudent")
+      setUsers(res.data);
+      setFilteredUsers(users);
     };
 
     fetchUsers();
@@ -28,7 +24,7 @@ const UserManagement = () => {
   // Filter users based on search input
   useEffect(() => {
     setFilteredUsers(users.filter(user =>
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      user.username.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
     ));
   }, [search, users]);
@@ -75,24 +71,22 @@ const UserManagement = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
+              <TableCell>UserName</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>Phone Number</TableCell>
               <TableCell>Role</TableCell>
-              <TableCell>Actions</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Enrolled Courses</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredUsers.map(user => (
               <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.status}</TableCell>
+                <TableCell>{user.phoneNumber}</TableCell>
                 <TableCell>{user.role}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>{user.role}</TableCell>
+                <TableCell>{user.enrolledCourses|| "No erollement yet"}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleEdit(user.id)} color="primary">
                     <EditIcon />

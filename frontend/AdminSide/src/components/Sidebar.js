@@ -47,7 +47,7 @@ const Sidebar = () => {
         <List>
           {[
             {text:'Dashboard',icon:<DashboardIcon/>,path:'/'},
-            {text:'Users',icon:<GroupAddOutlinedIcon/>,path:'/users'},
+            {text:'Students',icon:<GroupAddOutlinedIcon/>,path:'/users'},
             {text:'Courses',icon:<MenuBookIcon/>,path:'/courses'},
             {text:'Instructors',icon:<SchoolIcon/>,path:'/instructors'},
           ].map(({text,icon,path})=>(

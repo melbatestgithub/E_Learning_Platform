@@ -1,10 +1,27 @@
-import React from 'react'
+import React,{useState} from 'react'
 import { Box, Grid, Typography, TextField, Button, Checkbox, FormControlLabel, Link, Snackbar, CircularProgress } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import {useNavigate} from 'react-router-dom'
 import delivery1 from '../assets/deliveryLogin.jpg'
 import delivery2 from '../assets/delivery2.jpg'
+import axios from 'axios'
 import { useTheme } from '@emotion/react';
 const Login = () => {
+const [email,setEmail]=useState('')
+const [password,setPassword]=useState('')
+const [error,setError]=useState('')
+
+const navigate=useNavigate()
+  const handleLogin=async(e)=>{
+    e.preventDefault()
+  try {
+    const res=await axios.post("http://localhost:5600/user/auth/login",{email,password})
+   localStorage.setItem('token',res.data.token)
+   navigate('/')
+  } catch (error) {
+    setError("Incorrect Email or password")
+  }
+  }
   const theme=useTheme()
   return (
    <Grid container sx={{height:"100vh"}}>
@@ -36,13 +53,13 @@ const Login = () => {
                 }}
               />
             </Typography>
-            <form>
+            <form onSubmit={handleLogin}>
               <TextField
                 fullWidth
                 label="Email address"
                 name="email"
                 margin="normal"
-              
+               onChange={(e)=>setEmail(e.target.value)}
                 required
               />
               <TextField
@@ -51,7 +68,7 @@ const Login = () => {
                 type="password"
                 name="password"
                 margin="normal"
-               
+               onChange={(e)=>setPassword(e.target.value)}
                 required
               />
               <Box sx={{display:"flex",  mb:2,alignItems:"center",gap:8}} >
@@ -67,6 +84,7 @@ const Login = () => {
               }}} type="submit" >
                 Login
               </Button>
+             {error&& <Typography sx={{color:'red'}}>{error}</Typography>} 
             </form>
 
           </Box>

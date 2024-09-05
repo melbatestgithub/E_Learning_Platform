@@ -19,12 +19,18 @@ const UserSchema=mongoose.Schema({
   },
   role:{
     type:String,
-    default:"user"
+   enum:['student','instructor','admin']
   },
-  enrolledIn:{
-    type:Array,
-    default:[]
-  }
+  enrolledCourses:{
+    type:mongoose.Schema.Types.ObjectId,
+     ref:'Courses'
+  },
+  educationLevel:{
+    type:String,  
+},
+courseAssignedTo:{
+    type:String, 
+}
 })
 const User=mongoose.model('User',UserSchema)
 module.exports=User
