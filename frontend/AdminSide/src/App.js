@@ -17,12 +17,12 @@ function AppContent() {
 
   return (
     <Box sx={{ display: 'flex',gap:3 }}>
-      {!isLoginPage && <Sidebar />} {/* Conditionally render Sidebar */}
+      {!isLoginPage && <Sidebar />} 
       <Box
         component="main"
         sx={{ flexGrow: 1, bgcolor: 'background.default' }}
       >
-        {!isLoginPage && <Navbar />} {/* Conditionally render Navbar */}
+        {!isLoginPage && <Navbar />}
         <Routes>
           <Route path='/' element={<Dashboard />} />
           <Route path='/instructors' element={<Instructors />} />

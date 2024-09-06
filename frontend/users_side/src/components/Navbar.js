@@ -1,10 +1,19 @@
 import React from 'react'
-import { Menu as MenuIcon,Search as SearchIcon  } from '@mui/icons-material';
-import { AppBar, Toolbar, Typography, IconButton, Box,useTheme, TextField ,InputAdornment,Avatar, Badge} from '@mui/material';
-import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
-import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
+import { Search as SearchIcon  } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, Box,useTheme, TextField ,InputAdornment,Avatar, Button} from '@mui/material';
+import {useNavigate} from 'react-router-dom'
+
 import avatar from '../assets/avatar.jpg'
 const Navbar = () => {
+  const navigate=useNavigate()
+
+  const handleLogout=()=>{
+    console.log("Logged out")
+    localStorage.removeItem('user')
+    navigate('/login')
+    
+
+  }
 
   const theme=useTheme()
   return (
@@ -17,17 +26,9 @@ const Navbar = () => {
     }}
     >
        <Toolbar>
-        <IconButton
-         
-          aria-label="menu"
-          edge="start"
-          
-        >
-          <MenuIcon  />
-        </IconButton>
         <Box variant="h6" sx={{color:"#000",display:"flex",flexDirection:"column",alignItems:"start"}}>
        <Typography variant='h5' sx={{fontWeight:"bold"}}>Dashboard</Typography>  
-       <Typography sx={{color:theme.palette.primary.main}}>Welcome To Admin Page</Typography>  
+       <Typography sx={{color:theme.palette.primary.main}}>Welcome  Instructor name </Typography>  
         </Box> 
         <Box sx={{ flexGrow: 1 }} />
         <Box  >
@@ -43,21 +44,12 @@ const Navbar = () => {
           }}
           sx={{width:300,background:"#EEEDEB",borderRadius:6 ,border:"none", '& .MuiOutlinedInput-root': {
             '& fieldset': {
-              border: 'none',
+              border: 'none', 
             },
           },}} />
         </Box>
         <Box sx={{margin:".2rem .8rem",display:"flex",alignItems:'center',gap:2}}>
-        <IconButton color="inherit">
-          <Badge badgeContent={2 } color="error">
-          <NotificationsActiveOutlinedIcon sx={{color:theme.palette.primary.main}}/>
-          </Badge>
-        </IconButton>
-        <IconButton color="inherit">
-          <Badge badgeContent={3}  color="error">
-          <MailOutlineOutlinedIcon sx={{color:theme.palette.primary.main}}/>
-          </Badge>
-        </IconButton>
+       <Button sx={{backgroundColor:"#D3494E",color:'white'}} onClick={handleLogout}>Logout</Button>
         <Avatar
             src={avatar}
             sx={{
@@ -67,7 +59,7 @@ const Navbar = () => {
               bgcolor: theme.palette.grey[300], 
             }}
           >
-            
+           
           </Avatar>
         </Box>
        

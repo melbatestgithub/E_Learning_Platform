@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Box, Grid, Typography, TextField, Button, Checkbox, FormControlLabel, Snackbar, CircularProgress, Alert } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import Elearning from '../assets/DgLearning.jpg';
+import Elearning from '../assets/El.jpg';
 import axios from 'axios';
 import { useTheme } from '@emotion/react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [openAlert, setOpenAlert] = useState({ open: false, severity: '', message: '' });
   const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
@@ -27,9 +28,13 @@ const LoginPage = () => {
 
       console.log('User:', user);
 
-      if (user.role === 'admin') {
+      if (user.role === 'student') {
         setOpenAlert({ open: true, severity: 'success', message: 'Login Successful!' });
-        navigate('/');}
+        navigate('/student-dashboard/courses');
+      } else if (user.role === 'instructor') {
+        setOpenAlert({ open: true, severity: 'success', message: 'Login Successful!' });
+        navigate('/instructor-dashboard/assignedCourse');
+      }
 
     } catch (error) {
       setOpenAlert({ open: true, severity: 'error', message: 'Error occurred!' });
@@ -63,7 +68,7 @@ const LoginPage = () => {
       }}>
         <Box sx={{ width: '100%', maxWidth: 400 }}>
           <Typography gutterBottom sx={{ marginTop: "1rem" }}>
-            <Typography variant='p' sx={{ fontSize: "1.5rem", color: theme.palette.primary.main, textAlign: "center" }}>Login as Adminstrator </Typography>
+            <Typography variant='p' sx={{ fontSize: "1.5rem", color: theme.palette.primary.main, textAlign: "center" }}>Sign In </Typography>
             <Box
               component="span"
               sx={{
@@ -116,6 +121,7 @@ const LoginPage = () => {
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'} 
             </Button>
+            <Typography>Don't have an account <Link to="/"><span style={{ textDecoration: "underline", color: "#0077b6" }}>sign up</span></Link></Typography>
           </form>
           <Snackbar
             open={openAlert.open}

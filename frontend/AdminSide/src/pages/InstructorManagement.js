@@ -10,7 +10,6 @@ import {
   TableRow,
   Paper,
   Button,
-  Avatar,
   IconButton,
   TextField,
   TableSortLabel,
@@ -19,13 +18,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  useTheme,
-  Grid
+  CircularProgress,
+  useTheme
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import AddIcon from '@mui/icons-material/Add';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { visuallyHidden } from '@mui/utils';
+import axios from 'axios';
 
 const InstructorManagement = () => {
   const theme = useTheme();
@@ -35,47 +34,45 @@ const InstructorManagement = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
-  const [openModal, setOpenModal] = useState(false);
-  const [newInstructor, setNewInstructor] = useState({
-    name: '',
-    address: '',
-    description: '',
-    contactNumber: '',
-    workingHours: '',
-    photo: null,
-    certificate: null
-  });
+  const [loading, setLoading] = useState(false); 
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate fetching instructors from an API
-    const fetchInstructors = async () => {
-      const fetchedInstructors = [
-        {
-          id: 1,
-          name: 'John Doe',
-          address: '123 Main St',
-          photo: 'https://via.placeholder.com/100',
-          description: 'Expert in mathematics!',
-          contactNumber: '123-456-7890',
-          workingHours: '9:00 AM - 5:00 PM',
-        },
-        {
-          id: 2,
-          name: 'Jane Smith',
-          address: '456 Elm St',
-          photo: 'https://via.placeholder.com/100',
-          description: 'Specialist in physics!',
-          contactNumber: '234-567-8901',
-          workingHours: '10:00 AM - 6:00 PM',
-        },
-        // Add more instructors as needed
-      ];
-      setInstructors(fetchedInstructors);
+    const fetchInstructorsAndCourses = async () => {
+      setLoading(true); 
+      try {
+        const instructorRes = await axios.get("http://localhost:5600/user/instructor/getAll");
+        const courseRes = await axios.get("http://localhost:5600/course/getCourse");
+    
+        const coursesMap = courseRes.data.reduce((acc, course) => {
+          acc[course._id] = course.title; 
+          return acc;
+        }, {});
+    
+        
+        const instructorsWithCourses = instructorRes.data.map(instructor => {
+         
+          const courseTitles = Array.isArray(instructor.courseAssignedTo)
+            ? instructor.courseAssignedTo.map(courseId => coursesMap[courseId] || 'Not Assigned')
+            : [coursesMap[instructor.courseAssignedTo] || 'Not Assigned'];
+    
+          return {
+            ...instructor,
+            courseTitle: courseTitles.length > 0 ? courseTitles.join(', ') : 'Not Assigned' 
+          };
+        });
+    
+        setInstructors(instructorsWithCourses);
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+      } finally {
+        setLoading(false);
+      }
     };
+    
 
-    fetchInstructors();
+    fetchInstructorsAndCourses();
   }, []);
 
   const handleRequestSort = (event, property) => {
@@ -85,6 +82,7 @@ const InstructorManagement = () => {
   };
 
   const handleManageInstructor = (instructorId) => {
+    setLoading(true); 
     navigate(`/instructors/${instructorId}`);
   };
 
@@ -101,58 +99,16 @@ const InstructorManagement = () => {
     setPage(0);
   };
 
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setNewInstructor({
-      name: '',
-      address: '',
-      description: '',
-      contactNumber: '',
-      workingHours: '',
-      photo: null,
-      certificate: null
-    });
-  };
-
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setNewInstructor((prevState) => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  const handleFileUpload = (event) => {
-    const { name, files } = event.target;
-    setNewInstructor((prevState) => ({
-      ...prevState,
-      [name]: files[0]
-    }));
-  };
-
-  const handleAddInstructor = () => {
-    // Add the new instructor to the list (in a real app, you'd make an API call here)
-    setInstructors((prevInstructors) => [
-      ...prevInstructors,
-      { ...newInstructor, id: prevInstructors.length + 1 }
-    ]);
-    handleCloseModal();
-  };
-
   const filteredInstructors = instructors.filter((instructor) =>
-    instructor.name.toLowerCase().includes(searchTerm) ||
-    instructor.address.toLowerCase().includes(searchTerm)
+    instructor.username.toLowerCase().includes(searchTerm) ||
+    instructor.email.toLowerCase().includes(searchTerm)
   );
 
   const sortedInstructors = filteredInstructors.sort((a, b) => {
-    if (orderBy === 'name') {
+    if (orderBy === 'username') {
       return order === 'asc'
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name);
+        ? a.username.localeCompare(b.username)
+        : b.username.localeCompare(a.username);
     } else {
       return order === 'asc'
         ? a[orderBy] < b[orderBy] ? -1 : 1
@@ -174,26 +130,50 @@ const InstructorManagement = () => {
           variant='outlined'
           value={searchTerm}
           onChange={handleSearch}
-          sx={{ flex: .5, mb: 1, borderRadius: 3, background: 'whitesmoke', '& .MuiOutlinedInput-root': {
-                '& fieldset': {
-                  border: 'none', // Remove the border
-                }}}}
+          sx={{
+            flex: .5,
+            mb: 1,
+            borderRadius: 3,
+            background: 'whitesmoke',
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': {
+                border: 'none',
+              }
+            }
+          }}
         />
       </Box>
 
-      <Box sx={{ maxHeight: 600, overflow: 'auto' }}>
-        <TableContainer component={Paper}>
+      <Box sx={{ maxHeight: 600, overflow: 'auto', position: 'relative' }}>
+        {loading && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              zIndex: 1,
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        )}
+        <TableContainer component={Paper} sx={{ opacity: loading ? 0.5 : 1 }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Photo</TableCell>
                 <TableCell sortDirection={orderBy === 'name' ? order : false}>
                   <TableSortLabel
                     active={orderBy === 'name'}
                     direction={orderBy === 'name' ? order : 'asc'}
                     onClick={(event) => handleRequestSort(event, 'name')}
                   >
-                    Name
+                    Username
                     {orderBy === 'name' ? (
                       <Box component="span" sx={visuallyHidden}>
                         {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
@@ -201,33 +181,30 @@ const InstructorManagement = () => {
                     ) : null}
                   </TableSortLabel>
                 </TableCell>
-                <TableCell>Address</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Contact Number</TableCell>
-                <TableCell>Working Hours</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Education Level</TableCell>
+                <TableCell>Phone Number</TableCell>
+                <TableCell>Course Assigned To</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {displayedInstructors.map((instructor) => (
-                <TableRow key={instructor.id}>
-                  <TableCell>
-                    <Avatar src={instructor.photo} alt={`${instructor.name} photo`} />
-                  </TableCell>
-                  <TableCell>{instructor.name}</TableCell>
-                  <TableCell>{instructor.address}</TableCell>
-                  <TableCell>{instructor.description}</TableCell>
-                  <TableCell>{instructor.contactNumber}</TableCell>
-                  <TableCell>{instructor.workingHours}</TableCell>
+                <TableRow key={instructor._id}>
+                  <TableCell>{instructor.username}</TableCell>
+                  <TableCell>{instructor.email}</TableCell>
+                  <TableCell>{instructor.educationLevel}</TableCell>
+                  <TableCell>{instructor.phoneNumber}</TableCell>
+                  <TableCell>{instructor.courseTitle}</TableCell>
                   <TableCell>
                     <Button
                       variant="outlined"
                       color="primary"
-                      onClick={() => handleManageInstructor(instructor.id)}
+                      onClick={() => handleManageInstructor(instructor._id)}
                       sx={{ backgroundColor: theme.palette.primary.button, color: "white", textTransform: 'capitalize' }}
                     >
                       <IconButton sx={{ color: 'white' }}>
-                        <AdminPanelSettingsIcon sx={{ fontSize: "1rem" }} />
+                        <AdminPanelSettingsIcon sx={{ fontSize: '15px', color: 'white', mr: 1 }} />
                       </IconButton>
                       Manage
                     </Button>
@@ -236,122 +213,17 @@ const InstructorManagement = () => {
               ))}
             </TableBody>
           </Table>
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={filteredInstructors.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
         </TableContainer>
       </Box>
-
-      {/* Add Instructor Modal */}
-      <Dialog open={openModal} onClose={handleCloseModal}>
-        <DialogTitle>Add New Instructor</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Name"
-                name="name"
-                fullWidth
-                variant="outlined"
-                value={newInstructor.name}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Address"
-                name="address"
-                fullWidth
-                variant="outlined"
-                value={newInstructor.address}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                margin="dense"
-                label="Description"
-                name="description"
-                fullWidth
-                variant="outlined"
-                value={newInstructor.description}
-               
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Contact Number"
-                name="contactNumber"
-                fullWidth
-                variant="outlined"
-                value={newInstructor.contactNumber}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Working Hours"
-                name="workingHours"
-                fullWidth
-                variant="outlined"
-                value={newInstructor.workingHours}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                variant="contained"
-                component="label"
-                fullWidth
-              >
-                Upload Photo
-                <input
-                  type="file"
-                  hidden
-                  name="photo"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                />
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                variant="contained"
-                component="label"
-                fullWidth
-              >
-                Upload Certificate
-                <input
-                  type="file"
-                  hidden
-                  name="certificate"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleFileUpload}
-                />
-              </Button>
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleAddInstructor} color="primary">
-            Add Instructor
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={filteredInstructors.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
     </Box>
   );
 };

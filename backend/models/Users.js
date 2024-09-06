@@ -9,6 +9,9 @@ const UserSchema=mongoose.Schema({
     type:String,
     required:true
   },
+  confirmPassword:{
+    type:String,
+  },
   email:{
     type:String,
     required:true
@@ -21,15 +24,17 @@ const UserSchema=mongoose.Schema({
     type:String,
    enum:['student','instructor','admin']
   },
-  enrolledCourses:{
-    type:mongoose.Schema.Types.ObjectId,
-     ref:'Courses'
-  },
+  enrolledCourses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
+}], 
   educationLevel:{
     type:String,  
 },
-courseAssignedTo:{
-    type:String, 
+courseAssignedTo: {
+  type: [mongoose.Schema.Types.ObjectId], 
+  ref: 'Course', // Reference to the Course model
+  default: [] 
 }
 })
 const User=mongoose.model('User',UserSchema)

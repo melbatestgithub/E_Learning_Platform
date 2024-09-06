@@ -1,52 +1,94 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
   Grid,
   Card,
   CardContent,
-  Divider,
   IconButton,
-  useTheme
+  useTheme,
+  CircularProgress
 } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { PieChart, Pie, Cell } from 'recharts';
 import OrderIcon from '@mui/icons-material/ShoppingBasketOutlined';
-import RevenueIcon from '@mui/icons-material/AttachMoney';
 import RecentActorsIcon from '@mui/icons-material/RecentActors';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-
-// Dummy data for charts
-const revenueData = [
-  { name: 'Jan', revenue: 4000 },
-  { name: 'Feb', revenue: 3000 },
-  { name: 'Mar', revenue: 5000 },
-  { name: 'Apr', revenue: 7000 },
-  { name: 'May', revenue: 6000 },
-];
-
-const orderData = [
-  { name: 'Food', value: 400 },
-  { name: 'Beverages', value: 300 },
-  { name: 'Desserts', value: 200 },
-];
-
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
   const theme = useTheme();
+  const [totalCourses, setTotalCourses] = useState(0);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [totalInstructors, setTotalInstructors] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!user) {
+      
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const [coursesRes, studentsRes, instructorsRes] = await Promise.all([
+          axios.get("http://localhost:5600/course/count"), 
+          axios.get("http://localhost:5600/user/student/count"), 
+          axios.get("http://localhost:5600/user/instructor/count") 
+        ]);
+
+        setTotalCourses(coursesRes.data.count);
+        setTotalStudents(studentsRes.data.count);
+        setTotalInstructors(instructorsRes.data.count);
+      } catch (error) {
+        console.error('Failed to fetch dashboard data', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ flexGrow: 1, padding: 3 ,mt:10,borderRadius:3,boxShadow:4  }}>
+    <Box sx={{ flexGrow: 1, padding: 3, mt: 10, borderRadius: 3, boxShadow: 4 }}>
       <Typography variant="h5" gutterBottom>
         Dashboard
       </Typography>
       <Grid container spacing={3}>
-        {/* Stats Overview */}
         <Grid item xs={12} sm={4}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Total Users</Typography>
+              <Typography variant="h6">Total Students</Typography>
               <Typography variant="h6" color={theme.palette.primary.main}>
-                1,230
+                {totalStudents}
+              </Typography>
+              <IconButton>
+                <RecentActorsIcon />
+              </IconButton>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Total Courses</Typography>
+              <Typography variant="h6" color={theme.palette.primary.main}>
+                {totalCourses}
               </Typography>
               <IconButton>
                 <OrderIcon />
@@ -57,22 +99,9 @@ const Dashboard = () => {
         <Grid item xs={12} sm={4}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Total Courses</Typography>
-              <Typography variant="h6" color={theme.palette.primary.main}>
-                $12,345
-              </Typography>
-              <IconButton>
-                <RevenueIcon />
-              </IconButton>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <Card>
-            <CardContent>
               <Typography variant="h6">Total Instructors</Typography>
               <Typography variant="h6" color={theme.palette.primary.main}>
-                75
+                {totalInstructors}
               </Typography>
               <IconButton>
                 <RecentActorsIcon />
@@ -80,7 +109,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-        
       </Grid>
     </Box>
   );

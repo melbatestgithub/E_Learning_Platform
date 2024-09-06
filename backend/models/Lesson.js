@@ -10,17 +10,25 @@ const lessonSchema = new mongoose.Schema({
         required: true
     },
     content: {
-        type: String,  // This could be text or a reference to another collection, like a file or video
+        type: String,  
         required: true
     },
     courseId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course',  // Assuming you have a Course model
+        ref: 'Course',  // Reference to the Course model
         required: true
     },
-    quiz: {
+    quiz: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Quiz'
+        ref: 'Quiz'  // Reference to the Quiz model
+    }],
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',  // Reference to the User model
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

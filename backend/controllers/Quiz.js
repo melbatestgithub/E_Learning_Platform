@@ -5,14 +5,10 @@ const Lesson = require('../models/Lesson');
 exports.createQuiz = async (req, res) => {
     try {
         const { lessonId, questions } = req.body;
-
-        // Check if the lesson exists
         const lesson = await Lesson.findById(lessonId);
         if (!lesson) {
             return res.status(404).json({ message: 'Lesson not found' });
         }
-
-        // Create a new quiz
         const quiz = new Quiz({
             lessonId,
             questions
@@ -25,7 +21,6 @@ exports.createQuiz = async (req, res) => {
     }
 };
 
-// Controller to submit a quiz and get feedback
 exports.submitQuiz = async (req, res) => {
     try {
         const { quizId, answers } = req.body;
@@ -36,7 +31,6 @@ exports.submitQuiz = async (req, res) => {
             return res.status(404).json({ message: 'Quiz not found' });
         }
 
-        // Calculate the score and provide feedback
         let score = 0;
         const feedback = quiz.questions.map((question, index) => {
             const correctOption = question.options.find(option => option.isCorrect);

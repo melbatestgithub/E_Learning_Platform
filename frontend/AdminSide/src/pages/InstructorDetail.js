@@ -4,106 +4,156 @@ import {
   Typography,
   TextField,
   Button,
-  Paper,
-  IconButton,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Alert,
+  Snackbar,
+  CircularProgress, 
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const InstructorDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [restaurant, setRestaurant] = useState(null);
+  const [instructor, setInstructor] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [unassignedCourses, setUnassignedCourses] = useState([]);
   const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [openAddMenuDialog, setOpenAddMenuDialog] = useState(false);
-  const [newMenu, setNewMenu] = useState({ name: '', category: '', price: '' });
+  const [openAddCourseDialog, setOpenAddCourseDialog] = useState(false);
+  const [newCourseIds, setNewCourseIds] = useState([]);
+  const [loading, setLoading] = useState(true); 
+  const [alert, setAlert] = useState({ open: false, message: '', severity: 'success' });
+
+
+  const getInstructor = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5600/user/instructor/${id}`);
+      setInstructor(res.data);
+    } catch (error) {
+      console.error("Error fetching instructor:", error.response ? error.response.data : error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+ 
+  const getCourses = async () => {
+    try {
+      const res = await axios.get('http://localhost:5600/course/getCourse');
+      setCourses(res.data);
+    } catch (error) {
+      console.error("Error fetching courses:", error.response ? error.response.data : error.message);
+    }
+  };
+
+
+  const updateUnassignedCourses = () => {
+    if (instructor && courses.length > 0) {
+      const assignedCourseIds = Array.isArray(instructor.courseAssignedTo) 
+        ? instructor.courseAssignedTo.map((course) => String(course._id)) 
+        : [];
+      
+      const unassigned = courses.filter(course => !assignedCourseIds.includes(String(course._id)));
+      setUnassignedCourses(unassigned);
+    }
+  };
 
   useEffect(() => {
-    // Replace with your API call
-    const fetchedRestaurant = {
-      id: 1,
-      name: 'Pizza Palace',
-      address: '123 Main St',
-      logo: 'https://via.placeholder.com/100',
-      description: 'Best pizza in town!',
-      contactNumber: '123-456-7890',
-      openingHours: '10:00 AM - 11:00 PM',
-      menus: [
-        { id: 1, name: 'Pepperoni Pizza', category: 'Pizza', price: 10.99 },
-        { id: 2, name: 'Veggie Pizza', category: 'Pizza', price: 8.99 },
-        // More menu items...
-      ],
-    };
-
-    setRestaurant(fetchedRestaurant);
+    getInstructor();
+    getCourses();
   }, [id]);
 
-  const handleEditRestaurant = () => {
-    // Implement edit logic here
-    setOpenEditDialog(false);
+  useEffect(() => {
+    updateUnassignedCourses();
+  }, [instructor, courses]);
+
+
+  const handleEditInstructor = async () => {
+    try {
+      await axios.put(`http://localhost:5600/user/update/${id}`, instructor);
+      setOpenEditDialog(false);
+      getInstructor(); 
+      setAlert({ open: true, message: 'Instructor details updated successfully!', severity: 'success' });
+    } catch (error) {
+      console.error("Error updating instructor:", error.response ? error.response.data : error.message);
+      setAlert({ open: true, message: 'Failed to update instructor details.', severity: 'error' });
+    }
   };
 
-  const handleDeleteRestaurant = () => {
-    // Implement delete logic here
-    navigate('/restaurants');
+
+  const handleDeleteInstructor = async () => {
+    try {
+      await axios.delete(`http://localhost:5600/user/delete/${id}`);
+      navigate('/instructors');
+      setAlert({ open: true, message: 'Instructor deleted successfully!', severity: 'success' });
+    } catch (error) {
+      console.error("Error deleting instructor:", error.response ? error.response.data : error.message);
+      setAlert({ open: true, message: 'Failed to delete instructor.', severity: 'error' });
+    }
   };
 
-  const handleAddMenu = () => {
-    // Implement add menu logic here
-    const updatedRestaurant = {
-      ...restaurant,
-      menus: [
-        ...restaurant.menus,
-        {
-          id: restaurant.menus.length + 1,
-          name: newMenu.name,
-          category: newMenu.category,
-          price: parseFloat(newMenu.price),
-        },
-      ],
-    };
-    setRestaurant(updatedRestaurant);
-    setOpenAddMenuDialog(false);
+
+  const handleAddCourse = async () => {
+    if (newCourseIds.length === 0) {
+      setAlert({ open: true, message: 'No courses selected.', severity: 'warning' });
+      return;
+    }
+    
+    try {
+      await axios.post(`http://localhost:5600/user/instructor/assignCourse/${id}`, {
+        courseAssignedTo: newCourseIds,
+      });
+      setOpenAddCourseDialog(false);
+      getInstructor(); 
+      setAlert({ open: true, message: 'Courses assigned successfully!', severity: 'success' });
+    } catch (error) {
+      console.error("Error assigning course:", error.response ? error.response.data : error.message);
+      setAlert({ open: true, message: 'Failed to assign courses.', severity: 'error' });
+    }
   };
 
-  if (!restaurant) return <Typography>Loading...</Typography>;
+
+  const handleCloseAlert = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setAlert({ ...alert, open: false });
+  };
+
+  if (loading) return <CircularProgress />; 
+
+  if (!instructor) return <Typography>Loading...</Typography>;
 
   return (
     <Box sx={{ padding: 2, mt: 10, borderRadius: 3, boxShadow: 4 }}>
       <Typography variant="h6" gutterBottom>
-        {restaurant.name}
+        {instructor.username}
       </Typography>
       <Typography variant="body1" gutterBottom>
-        {restaurant.description}
+        {instructor.phoneNumber}
       </Typography>
       <Typography variant="body1" gutterBottom>
-        Address: {restaurant.address}
+        Email: {instructor.email}
       </Typography>
       <Typography variant="body1" gutterBottom>
-        Contact: {restaurant.contactNumber}
-      </Typography>
-      <Typography variant="body1" gutterBottom>
-        Opening Hours: {restaurant.openingHours}
+        Education Level: {instructor.educationLevel}
       </Typography>
 
       <Button
-        variant="contained"
-        color="primary"
+        sx={{background:"#0077b6",color:"white",mt:2,mr:2}}
         startIcon={<EditIcon />}
         onClick={() => setOpenEditDialog(true)}
-        sx={{ mt: 2, mr: 2 }}
+        
       >
         Edit Instructor
       </Button>
@@ -111,22 +161,27 @@ const InstructorDetail = () => {
         variant="contained"
         color="error"
         startIcon={<DeleteIcon />}
-        onClick={handleDeleteRestaurant}
-        sx={{ mt: 2, mr: 2  }}
+        onClick={handleDeleteInstructor}
+        sx={{ mt: 2, mr: 2 }}
       >
         Delete Instructor
       </Button>
       <Button
-        variant="contained"
-        color="error"
-        startIcon={<DeleteIcon />}
-        onClick={handleDeleteRestaurant}
-        sx={{ mt: 2 }}
+       sx={{background:"#0077b6",color:"white",mt:2}}
+        startIcon={<AddIcon />}
+        onClick={() => setOpenAddCourseDialog(true)}
+       
       >
-        Assign Instructor
+        Assign Course
       </Button>
 
-      {/* Edit Restaurant Dialog */}
+     
+      <Snackbar open={alert.open} autoHideDuration={6000} onClose={handleCloseAlert}>
+        <Alert onClose={handleCloseAlert} severity={alert.severity} sx={{ width: '100%' }}>
+          {alert.message}
+        </Alert>
+      </Snackbar>
+
       <Dialog
         open={openEditDialog}
         onClose={() => setOpenEditDialog(false)}
@@ -135,41 +190,33 @@ const InstructorDetail = () => {
         <DialogContent>
           <TextField
             margin="dense"
-            label="Restaurant Name"
+            label="Instructor Name"
             fullWidth
-            value={restaurant.name}
-            onChange={(e) => setRestaurant({ ...restaurant, name: e.target.value })}
+            value={instructor.username}
+            onChange={(e) => setInstructor({ ...instructor, username: e.target.value })}
           />
           <TextField
             margin="dense"
-            label="Restaurant Address"
+            label="Email"
             fullWidth
-            value={restaurant.address}
-            onChange={(e) => setRestaurant({ ...restaurant, address: e.target.value })}
+            value={instructor.email}
+            onChange={(e) => setInstructor({ ...instructor, email: e.target.value })}
             sx={{ mt: 2 }}
           />
           <TextField
             margin="dense"
-            label="Description"
+            label="Phone Number"
             fullWidth
-            value={restaurant.description}
-            onChange={(e) => setRestaurant({ ...restaurant, description: e.target.value })}
+            value={instructor.phoneNumber}
+            onChange={(e) => setInstructor({ ...instructor, phoneNumber: e.target.value })}
             sx={{ mt: 2 }}
           />
           <TextField
             margin="dense"
-            label="Contact Number"
+            label="Education Level"
             fullWidth
-            value={restaurant.contactNumber}
-            onChange={(e) => setRestaurant({ ...restaurant, contactNumber: e.target.value })}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Opening Hours"
-            fullWidth
-            value={restaurant.openingHours}
-            onChange={(e) => setRestaurant({ ...restaurant, openingHours: e.target.value })}
+            value={instructor.educationLevel}
+            onChange={(e) => setInstructor({ ...instructor, educationLevel: e.target.value })}
             sx={{ mt: 2 }}
           />
         </DialogContent>
@@ -177,50 +224,40 @@ const InstructorDetail = () => {
           <Button onClick={() => setOpenEditDialog(false)} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleEditRestaurant} color="primary">
+          <Button onClick={handleEditInstructor} sx={{background:"#0077b6",color:"white"}}>
             Save Changes
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Add Menu Dialog */}
       <Dialog
-        open={openAddMenuDialog}
-        onClose={() => setOpenAddMenuDialog(false)}
+        open={openAddCourseDialog}
+        onClose={() => setOpenAddCourseDialog(false)}
       >
-        <DialogTitle>Add Menu Item</DialogTitle>
+        <DialogTitle>Assign Course</DialogTitle>
         <DialogContent>
-          <TextField
-            margin="dense"
-            label="Menu Name"
-            fullWidth
-            value={newMenu.name}
-            onChange={(e) => setNewMenu({ ...newMenu, name: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Category"
-            fullWidth
-            value={newMenu.category}
-            onChange={(e) => setNewMenu({ ...newMenu, category: e.target.value })}
-            sx={{ mt: 2 }}
-          />
-          <TextField
-            margin="dense"
-            label="Price"
-            fullWidth
-            type="number"
-            value={newMenu.price}
-            onChange={(e) => setNewMenu({ ...newMenu, price: e.target.value })}
-            sx={{ mt: 2 }}
-          />
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel>Select Courses</InputLabel>
+            <Select
+              multiple
+              value={newCourseIds}
+              onChange={(e) => setNewCourseIds(e.target.value)}
+              label="Select Courses"
+            >
+              {unassignedCourses.map(course => (
+                <MenuItem key={course._id} value={course._id}>
+                  {course.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenAddMenuDialog(false)} color="secondary">
+          <Button onClick={() => setOpenAddCourseDialog(false)} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleAddMenu} color="primary">
-            Add Menu
+          <Button onClick={handleAddCourse} sx={{background:"#0077b6",color:"white"}}>
+            Assign
           </Button>
         </DialogActions>
       </Dialog>

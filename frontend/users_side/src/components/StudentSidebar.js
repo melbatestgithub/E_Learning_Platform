@@ -1,15 +1,12 @@
 import React,{useState} from 'react'
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Box,useTheme, Typography, Avatar } from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
 import GroupAddOutlinedIcon from '@mui/icons-material/GroupAddOutlined';
 import SchoolIcon from '@mui/icons-material/School';
-import LogoutIcon from '@mui/icons-material/Logout';
 import {Link} from 'react-router-dom'
 
 const Sidebar = () => {
   const theme=useTheme()
-  const [activeState,setActiveState]=useState('Dashboard')
+  const [activeState,setActiveState]=useState('Courses')
 
   const activeStyle={
     backgroundColor:theme.palette.primary.button,
@@ -41,17 +38,14 @@ const Sidebar = () => {
     >
       <Box>
         <Box sx={{display:"flex",justifyContent:"center",alignItems:"center",flexDirection:"column",marginTop:"1rem"}}>
-          <Typography>Admins</Typography>
+          <Typography>Student Dashboard</Typography>
           <Avatar/>
         </Box>
       <Box  sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',marginX:2 }}>
         <List>
           {[
-            {text:'Dashboard',icon:<DashboardIcon/>,path:'/'},
-            {text:'Students',icon:<GroupAddOutlinedIcon/>,path:'/users'},
-            {text:'Courses',icon:<MenuBookIcon/>,path:'/courses'},
-            {text:'Instructors',icon:<SchoolIcon/>,path:'/instructors'},
-            {text:'Logout',icon:<LogoutIcon/>,path:'/login'},
+            {text:'Courses',icon:<GroupAddOutlinedIcon/>,path:'/student-dashboard/courses'},
+            {text:'My Course',icon:<SchoolIcon/>,path:'/student-dashboard/myCourse'},
           ].map(({text,icon,path})=>(
             <ListItem
             button

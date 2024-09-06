@@ -1,4 +1,4 @@
-const Courses = require('../models/Courses');
+const Courses = require('../models/Course');
 
 // Create a new course
 exports.addCourse = async (req, res) => {
@@ -65,3 +65,12 @@ exports.deleteCourse = async (req, res) => {
         res.status(500).json({ message: 'Error deleting course', error });
     }
 };
+
+exports.totalCourse=async(req,res)=>{
+    try {
+        const count = await Courses.countDocuments();
+        res.json({ count });
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to get course count', error });
+      }
+}

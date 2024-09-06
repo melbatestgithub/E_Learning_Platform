@@ -1,12 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/Users');
-const Courses = require('../models/Courses');
+const Courses = require('../models/Course');
 
 // Register a new user
 exports.registerUser = async (req, res) => {
   try {
-    const { username, password, email, phoneNumber, role } = req.body;
+    const { username, password, email, phoneNumber, role,confirmPassword } = req.body;
 
     // Check if the user already exists
     const existingUser = await User.findOne({ email });
@@ -14,13 +14,12 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       username,
       password: hashedPassword,
+      confirmPassword: hashedPassword,
       email,
       phoneNumber,
       role
@@ -44,13 +43,11 @@ exports.loginUser = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Compare the password
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.status(400).json({ message: 'Invalid credentials' });
       }
   
-      // Generate JWT token
       const token = jwt.sign(
         {
           id: user._id,
@@ -85,47 +82,39 @@ exports.loginUser = async (req, res) => {
       res.status(500).send("Internal Server Error is Occured !")
     }
   }
-  // Controller to enroll a student in a course
-exports.enrollInCourse = async (req, res) => {
-  try {
-      const { userId, courseId } = req.body;
+  exports.enrollInCourse = async (req, res) => {
+    try {
+        const { userId, courseId } = req.body;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        if (user.role !== 'student') {
+            return res.status(403).json({ message: 'Only students can enroll in courses' });
+        }
 
-      // Find the user by ID
-      const user = await User.findById(userId);
+        const course = await Courses.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
 
-      if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-      }
+        if (user.enrolledCourses.includes(courseId)) {
+            return res.status(400).json({ message: 'Student is already enrolled in this course' });
+        }
 
-      // Check if the user is a student
-      if (user.role !== 'student') {
-          return res.status(403).json({ message: 'Only students can enroll in courses' });
-      }
+        user.enrolledCourses.push(courseId);
+        await user.save();
 
-      // Check if the course exists
-      const course = await Courses.findById(courseId);
-      if (!course) {
-          return res.status(404).json({ message: 'Course not found' });
-      }
-
-      // Check if the student is already enrolled in the course
-      if (user.enrolledCourses.includes(courseId)) {
-          return res.status(400).json({ message: 'Student is already enrolled in this course' });
-      }
-
-      // Add the course to the student's enrolled courses
-      user.enrolledCourses.push(courseId);
-      await user.save();
-
-      res.status(200).json({ message: 'Enrolled in course successfully', user });
-  } catch (error) {
-      res.status(500).json({ message: 'Error enrolling in course', error });
-  }
+        res.status(200).json({ message: 'Enrolled in course successfully', user });
+    } catch (error) {
+        console.error('Error enrolling in course:', error);  
+        res.status(500).json({ message: 'Error enrolling in course', error: error.message });
+    }
 };
 
 exports.getInstructors = async (req, res) => {
   try {
-      const instructors = await User.find();
+      const instructors = await User.find({role:"instructor"});
       res.status(200).json(instructors);
   } catch (error) {
       res.status(500).json({ message: 'Error fetching instructors', error });
@@ -135,61 +124,120 @@ exports.getInstructors = async (req, res) => {
 // Get a single instructor by ID
 exports.getInstructorById = async (req, res) => {
   try {
-      const instructor = await User.findById(req.params.id);
-      if (!instructor) {
-          return res.status(404).json({ message: 'Instructor not found' });
-      }
-      res.status(200).json(instructor);
+    const instructor = await User.findById(req.params.id)
+      .populate('courseAssignedTo','title'); // Populate courseAssignedTo field
+    
+    if (!instructor) {
+      return res.status(404).json({ message: 'Instructor not found' });
+    }
+    res.status(200).json(instructor);
   } catch (error) {
-      res.status(500).json({ message: 'Error fetching instructor', error });
+    console.error("Error fetching instructor:", error);
+    res.status(500).json({ message: 'Error fetching instructor', error });
   }
 };
 
-// Update an instructor by ID
-exports.updateInstructor = async (req, res) => {
+
+// Update a Users by ID
+exports.updateUser = async (req, res) => {
   try {
-      const { username, email, educationLevel, courseAssignedTo } = req.body;
       const instructor = await User.findByIdAndUpdate(
           req.params.id,
-          { username, email, educationLevel, courseAssignedTo },
+          req.body,
           { new: true }
       );
       if (!instructor) {
-          return res.status(404).json({ message: 'Instructor not found' });
+          return res.status(404).json({ message: 'User not found' });
       }
-      res.status(200).json({ message: 'Instructor updated successfully', instructor });
+      res.status(200).json({ message: 'User updated successfully', instructor });
   } catch (error) {
-      res.status(500).json({ message: 'Error updating instructor', error });
+      res.status(500).json({ message: 'Error updating USer', error });
   }
 };
 
-// Delete an instructor by ID
-exports.deleteInstructor = async (req, res) => {
+// Delete a User by ID
+exports.deleteUser = async (req, res) => {
   try {
-      const instructor = await User.findByIdAndDelete(req.params.id);
-      if (!instructor) {
-          return res.status(404).json({ message: 'Instructor not found' });
+      const user = await User.findByIdAndDelete(req.params.id);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
       }
-      res.status(200).json({ message: 'Instructor deleted successfully' });
+      res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
-      res.status(500).json({ message: 'Error deleting instructor', error });
+      res.status(500).json({ message: 'Error deleting User', error });
   }
 };
 
 // Assign a course to an instructor
 exports.assignCourse = async (req, res) => {
   try {
-      const { courseAssignedTo } = req.body;
-      const instructor = await User.findByIdAndUpdate(
-          req.params.id,
-          { courseAssignedTo },
-          { new: true }
-      );
-      if (!instructor) {
-          return res.status(404).json({ message: 'Instructor not found' });
-      }
-      res.status(200).json({ message: 'Course assigned successfully', instructor });
+    const instructor = await User.findById(req.params.id);
+    if (!instructor) {
+      return res.status(404).json({ message: 'Instructor not found' });
+    }
+
+    if (!Array.isArray(req.body.courseAssignedTo) || req.body.courseAssignedTo.length === 0) {
+      return res.status(400).json({ message: 'No courses provided' });
+    }
+
+
+    instructor.courseAssignedTo = [...new Set([...instructor.courseAssignedTo, ...req.body.courseAssignedTo])];
+    await instructor.save();
+
+    res.status(200).json({ message: 'Courses assigned successfully', instructor });
   } catch (error) {
-      res.status(500).json({ message: 'Error assigning course to instructor', error });
+    console.error('Error assigning course:', error);
+    res.status(500).json({ message: 'Error assigning course', error: error.message });
   }
 };
+
+exports.getEnrolledCourses = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const user = await User.findById(userId).populate({path:'enrolledCourses'});
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ enrolledCourses: user.enrolledCourses });
+  } catch (error) {
+    console.error('Error fetching enrolled courses:', error);
+    res.status(500).json({ message: 'Error fetching enrolled courses', error: error.message });
+  }
+};
+
+exports.getAssignedCourse=async(req,res)=>{
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).populate('courseAssignedTo');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user.courseAssignedTo);
+  } catch (error) {
+    console.error('Error fetching courses for user:', error);
+    res.status(500).json({ message: 'Error fetching courses' });
+  }
+}
+
+exports.totalInstructor=async(req,res)=>{
+  try {
+    const count = await User.countDocuments({ role: 'instructor' });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get instructor count', error });
+  }
+}
+
+exports.totalStudent=async(req,res)=>{
+  try {
+    const count = await User.countDocuments({ role: 'student' });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get student count', error });
+  }
+
+}

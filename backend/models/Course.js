@@ -21,5 +21,5 @@ const courseSchema=mongoose.Schema({
         required:true
     }
 })
-const Courses=mongoose.model("Courses",courseSchema)
+const Courses=mongoose.model("Course",courseSchema)
 module.exports=Courses
