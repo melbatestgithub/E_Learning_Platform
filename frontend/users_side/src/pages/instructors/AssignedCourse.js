@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const AssignedCourse = () => {
-  const navigate = useNavigate();
   const [assignedCourses, setAssignedCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,7 +20,7 @@ const AssignedCourse = () => {
 
     const fetchAssignedCourses = async () => {
       try {
-        const response = await axios.get(`http://localhost:5600/user/instructor/courses/${userId}`);
+        const response = await axios.get(`https://elearning-server-side.onrender.com/user/instructor/courses/${userId}`);
         setAssignedCourses(response.data);
       } catch (err) {
         console.error('Error fetching assigned courses:', err);

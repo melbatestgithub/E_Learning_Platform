@@ -17,7 +17,7 @@ const CreateLesson = () => {
       try {
         const storedUser = JSON.parse(localStorage.getItem('user'));
         const userId = storedUser?.id;
-        const response = await axios.get(`http://localhost:5600/user/instructor/courses/${userId}`);
+        const response = await axios.get(`https://elearning-server-side.onrender.com/user/instructor/courses/${userId}`);
         setCourses(response.data);
       } catch (error) {
         console.error('Error fetching assigned courses:', error);
@@ -47,7 +47,7 @@ const CreateLesson = () => {
         createdBy:userId
       };
   
-      const lessonResponse = await axios.post('http://localhost:5600/lesson/createLesson', lessonData);
+      const lessonResponse = await axios.post('https://elearning-server-side.onrender.com/lesson/createLesson', lessonData);
   
       if (lessonResponse.status === 201) {
         setSuccess(true);  

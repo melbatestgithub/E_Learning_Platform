@@ -9,7 +9,6 @@ import { useTheme } from '@emotion/react';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [openAlert, setOpenAlert] = useState({ open: false, severity: '', message: '' });
   const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
@@ -20,7 +19,7 @@ const LoginPage = () => {
     setLoading(true); 
 
     try {
-      const response = await axios.post("http://localhost:5600/user/auth/login", { email, password });
+      const response = await axios.post("https://elearning-server-side.onrender.com/user/auth/login", { email, password });
       const { token, user } = response.data;
 
       localStorage.setItem('user', JSON.stringify(user));

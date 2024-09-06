@@ -26,7 +26,7 @@ const MyCourse = () => {
   useEffect(() => {
     const fetchEnrolledCourses = async () => {
       try {
-        const response = await axios.get(`http://localhost:5600/user/students/${userId}/enrolledCourses`);
+        const response = await axios.get(`https://elearning-server-side.onrender.com/user/students/${userId}/enrolledCourses`);
         console.log('API Response:', response.data);
         setEnrolledCourses(response.data.enrolledCourses);
       } catch (error) {

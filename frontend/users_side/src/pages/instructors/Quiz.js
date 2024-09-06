@@ -23,7 +23,7 @@ const Quiz = () => {
         }
 
         const userId = storedUser.id;
-        const response = await axios.get(`http://localhost:5600/lesson/user/${userId}`);
+        const response = await axios.get(`https://elearning-server-side.onrender.com/lesson/user/${userId}`);
         setLessons(response.data);
       } catch (error) {
         console.error('Error fetching lessons:', error);
@@ -43,7 +43,7 @@ const Quiz = () => {
   const handleQuizSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5600/quiz/createQuiz', {
+      const response = await axios.post('https://elearning-server-side.onrender.com/quiz/createQuiz', {
         title: quizTitle,
         lessonId: selectedLesson,
         questions: quizQuestions

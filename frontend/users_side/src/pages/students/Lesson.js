@@ -20,7 +20,7 @@ const StudentLessons = () => {
           return;
         }
         const userId = storedUser.id;
-        const response = await axios.get(`http://localhost:5600/lesson/lessons-quiz/${courseId}/${userId}`);
+        const response = await axios.get(`https://elearning-server-side.onrender.com/lesson/lessons-quiz/${courseId}/${userId}`);
         setLessons(response.data);
       } catch (error) {
         console.error('Error fetching lessons:', error);

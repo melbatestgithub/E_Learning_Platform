@@ -35,10 +35,10 @@ const CoursesManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const coursesRes = await axios.get('http://localhost:5600/course/getCourse');
+        const coursesRes = await axios.get('https://elearning-server-side.onrender.com/course/getCourse');
         setCourses(coursesRes.data);
 
-        const enrolledRes = await axios.get(`http://localhost:5600/user/students/${userId}/enrolledCourses`);
+        const enrolledRes = await axios.get(`https://elearning-server-side.onrender.com/user/students/${userId}/enrolledCourses`);
         setEnrolledCourses(enrolledRes.data.enrolledCourses.map(course => course._id));
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -54,7 +54,7 @@ const CoursesManagement = () => {
 
   const handleEnroll = async (courseId) => {
     try {
-      const response = await axios.post('http://localhost:5600/user/students/enroll', {
+      const response = await axios.post('https://elearning-server-side.onrender.com/user/students/enroll', {
         userId,
         courseId,
       });

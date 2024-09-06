@@ -30,7 +30,7 @@ const Register = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post("http://localhost:5600/user/auth/register", registerData);
+            const response = await axios.post("https://elearning-server-side.onrender.com/user/auth/register", registerData);
             setRegisterData({
                 username: '',
                 password: '',
