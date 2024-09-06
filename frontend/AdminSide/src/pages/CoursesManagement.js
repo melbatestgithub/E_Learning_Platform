@@ -53,7 +53,7 @@ const CoursesManagement = () => {
     const getCourses = async () => {
       try {
         setLoading(true); 
-        const res = await axios.get('http://localhost:5600/course/getCourse');
+        const res = await axios.get('https://elearning-server-side.onrender.com/course/getCourse');
         setCourses(res.data);
         setLoading(false); 
       } catch (error) {
@@ -102,10 +102,10 @@ const CoursesManagement = () => {
   const handleAddCourse = async () => {
     try {
       if (selectedCourse) {
-        await axios.put(`http://localhost:5600/course/update/${selectedCourse._id}`, addCourse);
+        await axios.put(`https://elearning-server-side.onrender.com/course/update/${selectedCourse._id}`, addCourse);
         setAlert({ open: true, message: 'Course updated successfully!', severity: 'success' });
       } else {
-        await axios.post('http://localhost:5600/course/addCourse', addCourse);
+        await axios.post('https://elearning-server-side.onrender.com/course/addCourse', addCourse);
         setAlert({ open: true, message: 'Course added successfully!', severity: 'success' });
       }
       setAddCourse({
@@ -117,7 +117,7 @@ const CoursesManagement = () => {
       });
       handleCloseModal();
       
-      const res = await axios.get('http://localhost:5600/course/getCourse');
+      const res = await axios.get('https://elearning-server-side.onrender.com/course/getCourse');
       setCourses(res.data);
     } catch (error) {
       console.error('Failed to save course:', error);
@@ -127,7 +127,7 @@ const CoursesManagement = () => {
 
   const handleDeleteCourse = async (courseId) => {
     try {
-      await axios.delete(`http://localhost:5600/course/delete/${courseId}`);
+      await axios.delete(`https://elearning-server-side.onrender.com/course/delete/${courseId}`);
       setCourses(courses.filter((course) => course._id !== courseId));
       setAlert({ open: true, message: 'Course deleted successfully!', severity: 'success' });
     } catch (error) {

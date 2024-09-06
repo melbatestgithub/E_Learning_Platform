@@ -19,7 +19,7 @@ const LoginPage = () => {
     setLoading(true); 
 
     try {
-      const response = await axios.post("http://localhost:5600/user/auth/login", { email, password });
+      const response = await axios.post("https://elearning-server-side.onrender.com/user/auth/login", { email, password });
       const { token, user } = response.data;
 
       localStorage.setItem('user', JSON.stringify(user));

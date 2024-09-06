@@ -37,7 +37,7 @@ const InstructorDetail = () => {
 
   const getInstructor = async () => {
     try {
-      const res = await axios.get(`http://localhost:5600/user/instructor/${id}`);
+      const res = await axios.get(`https://elearning-server-side.onrender.com/user/instructor/${id}`);
       setInstructor(res.data);
     } catch (error) {
       console.error("Error fetching instructor:", error.response ? error.response.data : error.message);
@@ -49,7 +49,7 @@ const InstructorDetail = () => {
  
   const getCourses = async () => {
     try {
-      const res = await axios.get('http://localhost:5600/course/getCourse');
+      const res = await axios.get('https://elearning-server-side.onrender.com/course/getCourse');
       setCourses(res.data);
     } catch (error) {
       console.error("Error fetching courses:", error.response ? error.response.data : error.message);
@@ -80,7 +80,7 @@ const InstructorDetail = () => {
 
   const handleEditInstructor = async () => {
     try {
-      await axios.put(`http://localhost:5600/user/update/${id}`, instructor);
+      await axios.put(`https://elearning-server-side.onrender.com/user/update/${id}`, instructor);
       setOpenEditDialog(false);
       getInstructor(); 
       setAlert({ open: true, message: 'Instructor details updated successfully!', severity: 'success' });
@@ -93,7 +93,7 @@ const InstructorDetail = () => {
 
   const handleDeleteInstructor = async () => {
     try {
-      await axios.delete(`http://localhost:5600/user/delete/${id}`);
+      await axios.delete(`https://elearning-server-side.onrender.com/user/delete/${id}`);
       navigate('/instructors');
       setAlert({ open: true, message: 'Instructor deleted successfully!', severity: 'success' });
     } catch (error) {
@@ -110,7 +110,7 @@ const InstructorDetail = () => {
     }
     
     try {
-      await axios.post(`http://localhost:5600/user/instructor/assignCourse/${id}`, {
+      await axios.post(`https://elearning-server-side.onrender.com/user/instructor/assignCourse/${id}`, {
         courseAssignedTo: newCourseIds,
       });
       setOpenAddCourseDialog(false);

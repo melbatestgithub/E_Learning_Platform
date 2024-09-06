@@ -42,8 +42,8 @@ const InstructorManagement = () => {
     const fetchInstructorsAndCourses = async () => {
       setLoading(true); 
       try {
-        const instructorRes = await axios.get("http://localhost:5600/user/instructor/getAll");
-        const courseRes = await axios.get("http://localhost:5600/course/getCourse");
+        const instructorRes = await axios.get("https://elearning-server-side.onrender.com/user/instructor/getAll");
+        const courseRes = await axios.get("https://elearning-server-side.onrender.com/course/getCourse");
     
         const coursesMap = courseRes.data.reduce((acc, course) => {
           acc[course._id] = course.title; 

@@ -38,9 +38,9 @@ const Dashboard = () => {
       setLoading(true);
       try {
         const [coursesRes, studentsRes, instructorsRes] = await Promise.all([
-          axios.get("http://localhost:5600/course/count"), 
-          axios.get("http://localhost:5600/user/student/count"), 
-          axios.get("http://localhost:5600/user/instructor/count") 
+          axios.get("https://elearning-server-side.onrender.com/course/count"), 
+          axios.get("https://elearning-server-side.onrender.com/user/student/count"), 
+          axios.get("https://elearning-server-side.onrender.com/user/instructor/count") 
         ]);
 
         setTotalCourses(coursesRes.data.count);

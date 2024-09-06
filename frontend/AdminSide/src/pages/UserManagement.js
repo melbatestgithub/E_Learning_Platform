@@ -20,7 +20,7 @@ const UserManagement = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5600/user/getStudent");
+        const res = await axios.get("https://elearning-server-side.onrender.com/user/getStudent");
         setUsers(res.data);
         setFilteredUsers(res.data);
       } catch (error) {
@@ -37,7 +37,7 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await axios.get("http://localhost:5600/course/getCourse");
+        const res = await axios.get("https://elearning-server-side.onrender.com/course/getCourse");
         setCourses(res.data);
       } catch (error) {
         console.error("Error fetching courses:", error);
@@ -66,7 +66,7 @@ const UserManagement = () => {
 
   const handleEditSubmit = async () => {
     try {
-      await axios.put(`http://localhost:5600/user/update/${currentUser._id}`, currentUser);
+      await axios.put(`https://elearning-server-side.onrender.com/user/update/${currentUser._id}`, currentUser);
       setUsers(users.map(user => user._id === currentUser._id ? currentUser : user));
       setAlert({ open: true, message: 'User updated successfully', severity: 'success' });
       setOpenEditModal(false);
@@ -83,7 +83,7 @@ const UserManagement = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5600/user/delete/${currentUser._id}`);
+      await axios.delete(`https://elearning-server-side.onrender.com/user/delete/${currentUser._id}`);
       setUsers(users.filter(user => user._id !== currentUser._id));
       setAlert({ open: true, message: 'User deleted successfully', severity: 'success' });
       setOpenDeleteConfirm(false);
